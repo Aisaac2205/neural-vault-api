@@ -63,8 +63,11 @@ public class RateLimitFilter implements Filter {
             return;
         }
 
+        // Wrap the request to allow multiple body reads
+        CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest(httpRequest);
+
         // Get client IP
-        String clientIp = getClientIp(httpRequest);
+        String clientIp = getClientIp(cachedRequest);
 
         // 1. Check if IP is blocked
         if (ipBlocklistService.isBlocked(clientIp)) {
@@ -75,7 +78,7 @@ public class RateLimitFilter implements Filter {
         }
 
         // 2. Bot detection and fingerprinting
-        BotDetectionService.RequestFingerprint fingerprint = botDetectionService.analyzeRequest(httpRequest);
+        BotDetectionService.RequestFingerprint fingerprint = botDetectionService.analyzeRequest(cachedRequest);
 
         // Block high-risk bots immediately
         if (botDetectionService.shouldBlock(fingerprint)) {
@@ -87,7 +90,7 @@ public class RateLimitFilter implements Filter {
         }
 
         // 3. Check for suspicious content in request
-        boolean isContentSuspicious = isSuspiciousRequest(httpRequest);
+        boolean isContentSuspicious = isSuspiciousRequest(cachedRequest);
 
         // 4. Determine if this is a suspicious request (bot OR content)
         boolean isSuspicious = botDetectionService.isLikelyBot(fingerprint) || isContentSuspicious;
@@ -125,7 +128,7 @@ public class RateLimitFilter implements Filter {
                 ipBlocklistService.decreaseSuspicionScore(clientIp);
             }
 
-            chain.doFilter(request, response);
+            chain.doFilter(cachedRequest, response);
         } else {
             // Rate limit exceeded
             long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
@@ -142,7 +145,7 @@ public class RateLimitFilter implements Filter {
         }
     }
 
-    private boolean isSuspiciousRequest(HttpServletRequest request) {
+    private boolean isSuspiciousRequest(CachedBodyHttpServletRequest request) {
         try {
             if (!"POST".equalsIgnoreCase(request.getMethod())) {
                 return false;
