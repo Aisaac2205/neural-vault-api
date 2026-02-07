@@ -15,12 +15,12 @@ import javax.sql.DataSource;
 @Profile("prod")
 public class DatabaseConfig {
 
-    @Value("${DATABASE_URL}")
+    @Value("${DATABASE_PUBLIC_URL:${DATABASE_URL:}}")
     private String databaseUrl;
 
     @Bean
     public DataSource dataSource() {
-        log.info("Configuring database connection from DATABASE_URL");
+        log.info("Configuring database connection from DATABASE_PUBLIC_URL or DATABASE_URL");
         
         try {
             // Parse Railway's DATABASE_URL format: postgresql://user:pass@host:port/db
