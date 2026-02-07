@@ -102,7 +102,7 @@ neural-vault-api/
 
 **Response:** Returns the most suitable AiTool object based on Gemini analysis.
 
-**Note:** Rate limited to 10 requests per minute per IP. Results cached for 1 hour.
+**Note:** Rate limited to 30 requests per minute per IP. Results cached for 1 hour.
 
 **Response Headers:**
 ```
@@ -116,7 +116,7 @@ X-RateLimit-Suspicious: true  (if request detected as suspicious)
 
 | Level | Rate | Description |
 |-------|------|-------------|
-| Normal Users | 10 req/min | Standard rate for legitimate users |
+| Normal Users | 30 req/min | Standard rate for legitimate users |
 | Suspicious Users | 3 req/min | Reduced rate for detected bots/suspicious behavior |
 | Daily Global Limit | 1000 req/day | Maximum API calls to Gemini to prevent overconsumption |
 
@@ -208,8 +208,8 @@ app.cache.recommendation.ttl-hours=1
 app.cache.recommendation.max-size=100
 
 # Rate Limiting - Normal Users
-ratelimit.capacity=10
-ratelimit.refill.tokens=10
+ratelimit.capacity=30
+ratelimit.refill.tokens=30
 ratelimit.refill.duration=1
 
 # Rate Limiting - Suspicious Users
