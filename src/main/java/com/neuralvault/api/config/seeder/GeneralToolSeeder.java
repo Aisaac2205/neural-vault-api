@@ -174,6 +174,18 @@ public class GeneralToolSeeder {
                 .icon("ph-video-camera")
                 .category(AiTool.Category.GENERAL)
                 .tags(Arrays.asList("video", "edición", "control", "vfx"))
+                .build(),
+
+            AiTool.builder()
+                .id("glm-4-7b")
+                .name("GLM-4.7B")
+                .specialty("Rendimiento nivel GPT-4 gratuito/Open Source")
+                .description("Modelo de Zhipu AI que rivaliza con Claude 4.5 y GPT 5.2 en razonamiento y codificación. Es una de las mejores opciones Open Weights disponibles actualmente, con una ventana de contexto enorme.")
+                .pricing("Gratis / Open Weights")
+                .url("https://chat.z.ai/")
+                .icon("ph-lightning")
+                .category(AiTool.Category.GENERAL)
+                .tags(Arrays.asList("open source", "gratis", "zhipu", "razonamiento"))
                 .build()
         );
         
