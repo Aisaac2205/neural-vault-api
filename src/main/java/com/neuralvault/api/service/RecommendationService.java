@@ -22,8 +22,12 @@ public class RecommendationService {
 
     @Cacheable(value = "recommendations", key = "#query.toLowerCase().trim()")
     public Optional<AiTool> recommend(String query) {
+        long startTime = System.currentTimeMillis();
+
         // Sanitizar el input del usuario
+        long sanitizeStart = System.currentTimeMillis();
         String sanitizedQuery = promptSanitizer.sanitize(query);
+        log.debug("Sanitization took: {}ms", System.currentTimeMillis() - sanitizeStart);
 
         // Log if we detect something suspicious
         if (promptSanitizer.isSuspicious(query)) {
@@ -39,16 +43,21 @@ public class RecommendationService {
         log.info("Cache MISS - Processing recommendation request for query: {}", sanitizedQuery);
 
         List<AiTool> allTools = aiToolRepository.findAll();
+        log.debug("Retrieved {} tools from database", allTools.size());
+
         // Si no hay herramientas, salimos rápido
         if (allTools.isEmpty()) {
             return Optional.empty();
         }
 
+        long toolsContextStart = System.currentTimeMillis();
         String toolsContext = allTools.stream()
                 .map(tool -> String.format("- %s: %s", tool.getId(), tool.getSpecialty()))
                 .collect(Collectors.joining("\n"));
+        log.debug("Tools context built in: {}ms", System.currentTimeMillis() - toolsContextStart);
 
         // Prompt estructurado con delimitadores y defensas contra injection
+        long promptBuildStart = System.currentTimeMillis();
         String promptText = String.format("""
                 === INSTRUCCIONES DEL SISTEMA (NO MODIFICAR) ===
                 Eres un asistente especializado en recomendar herramientas de IA.
@@ -70,18 +79,21 @@ public class RecommendationService {
                 
                 === TU RESPUESTA (SOLO ID O 'null') ===
                 """, toolsContext, sanitizedQuery);
+        log.debug("Prompt built in: {}ms, Length: {} chars",
+                System.currentTimeMillis() - promptBuildStart, promptText.length());
 
         try {
             log.debug("Sending prompt to Gemini API");
 
             // Llamada a la API de Gemini
             String content = geminiClient.generateContent(promptText);
-            
+
             if (content == null) {
                 log.warn("Received null response from Gemini");
+                log.info("Total request time: {}ms", System.currentTimeMillis() - startTime);
                 return Optional.empty();
             }
-            
+
             log.info("Gemini response: {}", content);
 
             // Validación estricta de la respuesta
@@ -114,10 +126,12 @@ public class RecommendationService {
             }
 
             log.info("Valid ID found: {}", cleanId);
+            log.info("Total recommendation time: {}ms", System.currentTimeMillis() - startTime);
             return aiToolRepository.findById(cleanId);
 
         } catch (Exception e) {
-            log.error("Error calling Gemini API: {}", e.getMessage(), e);
+            long errorTime = System.currentTimeMillis();
+            log.error("Error calling Gemini API after {}ms: {}", errorTime - startTime, e.getMessage(), e);
             return Optional.empty();
         }
     }

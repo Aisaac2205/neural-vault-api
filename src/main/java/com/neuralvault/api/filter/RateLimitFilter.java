@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @Slf4j
-@Component
+// @Component - Temporarily disabled due to issues blocking legitimate requests
 @Order(1)
 public class RateLimitFilter implements Filter {
 

@@ -51,6 +51,9 @@ public class GeminiClient {
     }
 
     public String generateContent(String prompt) {
+        long startTime = System.currentTimeMillis();
+        log.info("Starting Gemini API request");
+
         // Check circuit breaker first
         if (!circuitBreaker.allowRequest()) {
             log.warn("Request blocked by circuit breaker. State: {}, Daily remaining: {}",
@@ -59,6 +62,9 @@ public class GeminiClient {
         }
 
         try {
+            long checkTime = System.currentTimeMillis();
+            log.debug("Circuit breaker check took: {}ms", checkTime - startTime);
+
             if (client == null) {
                 initializeClient();
             }
@@ -69,14 +75,22 @@ public class GeminiClient {
                 return null;
             }
 
-            log.debug("Generating content with model: {} (Daily: {}/1000)",
+            log.info("Sending request to Gemini model: {} (Daily: {}/1000)",
                     model, circuitBreaker.getDailyRequestCount());
+            log.debug("Prompt length: {} characters", prompt.length());
+
+            long beforeSendTime = System.currentTimeMillis();
+            log.debug("Client init took: {}ms", beforeSendTime - checkTime);
 
             GenerateContentResponse response = client.models.generateContent(model, prompt, null);
+
+            long responseTime = System.currentTimeMillis();
+            log.info("Gemini API response received in: {}ms", responseTime - beforeSendTime);
 
             if (response != null && response.text() != null) {
                 String text = response.text();
                 log.debug("Generated text: {}", text);
+                log.info("Total request time: {}ms", System.currentTimeMillis() - startTime);
                 circuitBreaker.recordSuccess();
                 return text;
             } else {
@@ -86,7 +100,10 @@ public class GeminiClient {
             }
 
         } catch (Exception e) {
-            log.error("Error generating content with Gemini API: {}", e.getMessage());
+            long errorTime = System.currentTimeMillis();
+            long duration = errorTime - startTime;
+            log.error("Error generating content with Gemini API after {}ms: {} - {}",
+                    duration, e.getClass().getSimpleName(), e.getMessage());
             circuitBreaker.recordFailure();
             return null;
         }
