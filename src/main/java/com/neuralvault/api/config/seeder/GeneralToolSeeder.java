@@ -177,8 +177,8 @@ public class GeneralToolSeeder {
                 .build(),
 
             AiTool.builder()
-                .id("glm-4-7b")
-                .name("GLM-4.7B")
+                .id("glm-4-7")
+                .name("GLM-4.7")
                 .specialty("Rendimiento nivel GPT-4 gratuito/Open Source")
                 .description("Modelo de Zhipu AI que rivaliza con Claude 4.5 y GPT 5.2 en razonamiento y codificación. Es una de las mejores opciones Open Weights disponibles actualmente, con una ventana de contexto enorme.")
                 .pricing("Gratis / Open Weights")
