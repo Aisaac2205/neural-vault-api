@@ -68,8 +68,8 @@ public class DatabaseConfig {
                 port = Integer.parseInt(hostAndPort.substring(portColonIndex + 1));
             }
             
-            // Convert to JDBC format: jdbc:postgresql://host:port/db
-            String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s", host, port, database);
+            // Convert to JDBC format with SSL: jdbc:postgresql://host:port/db?sslmode=require
+            String jdbcUrl = String.format("jdbc:postgresql://%s:%d/%s?sslmode=require", host, port, database);
             
             log.info("Connecting to PostgreSQL at {}:{}/{} with user {}", host, port, database, username);
             
@@ -82,10 +82,14 @@ public class DatabaseConfig {
             // Railway-specific optimizations
             config.setMaximumPoolSize(5);
             config.setMinimumIdle(2);
-            config.setConnectionTimeout(20000);
+            config.setConnectionTimeout(30000); // Increased timeout for Railway cold starts
             config.setIdleTimeout(300000);
             config.setMaxLifetime(1200000);
             config.setLeakDetectionThreshold(60000);
+            
+            // SSL properties for Railway
+            config.addDataSourceProperty("ssl", "true");
+            config.addDataSourceProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory");
             
             return new HikariDataSource(config);
             
