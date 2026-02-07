@@ -1,0 +1,74 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# IDE - VS Code
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# IDE - Eclipse
+.apt_generated
+.springBeans
+.sts4-cache
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# H2 Database files
+*.db
+*.mv.db
+*.trace.db
+
+# Application properties with secrets (if created)
+application-local.properties
+application-dev.properties
+# application-prod.properties is needed for Railway deployment
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# Test reports
+test-output/
+surefire-reports/
+failsafe-reports/
